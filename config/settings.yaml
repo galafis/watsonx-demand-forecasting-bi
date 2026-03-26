@@ -1,0 +1,121 @@
+# =============================================================================
+# Watsonx Demand Forecasting BI - Configuration
+# =============================================================================
+
+watsonx:
+  generation:
+    model_id: "ibm/granite-13b-chat-v2"
+    parameters:
+      max_new_tokens: 1024
+      temperature: 0.3
+      top_p: 0.9
+      repetition_penalty: 1.1
+  time_series:
+    model_id: "ibm/granite-tsfm"
+    parameters:
+      prediction_length: 30
+
+forecast:
+  default_horizon: 30
+  frequency: "D"
+  confidence_level: 0.95
+  min_train_size: 90
+  seasonality:
+    weekly: true
+    monthly: true
+    yearly: true
+
+features:
+  lag_features: [1, 7, 14, 28]
+  rolling_windows: [7, 14, 30]
+  rolling_statistics: ["mean", "std", "min", "max"]
+  calendar_features:
+    - day_of_week
+    - day_of_month
+    - month
+    - quarter
+    - week_of_year
+    - is_weekend
+    - is_holiday
+    - is_month_start
+    - is_month_end
+  external_signals:
+    weather: true
+    promotions: true
+    economic_indicators: true
+
+models:
+  statistical:
+    arima:
+      auto_order: true
+      max_p: 5
+      max_d: 2
+      max_q: 5
+      seasonal: true
+      seasonal_period: 7
+    ets:
+      error: "add"
+      trend: "add"
+      seasonal: "add"
+      seasonal_periods: 7
+    tbats:
+      seasonal_periods: [7, 30]
+      use_box_cox: true
+  ml:
+    lightgbm:
+      n_estimators: 500
+      learning_rate: 0.05
+      max_depth: 6
+      num_leaves: 31
+      min_child_samples: 20
+      subsample: 0.8
+      colsample_bytree: 0.8
+      reg_alpha: 0.1
+      reg_lambda: 0.1
+    xgboost:
+      n_estimators: 500
+      learning_rate: 0.05
+      max_depth: 6
+      min_child_weight: 5
+      subsample: 0.8
+      colsample_bytree: 0.8
+      reg_alpha: 0.1
+      reg_lambda: 0.1
+  neural:
+    neuralprophet:
+      epochs: 100
+      learning_rate: 0.1
+      batch_size: 64
+      changepoints_range: 0.8
+      n_lags: 14
+  ensemble:
+    method: "weighted_average"
+    weight_metric: "rmse"
+    min_models: 2
+
+evaluation:
+  backtesting:
+    n_splits: 5
+    test_size: 30
+    step_size: 30
+    gap: 0
+  metrics:
+    primary: "rmse"
+    secondary: ["mape", "wape", "smape", "mae"]
+
+governance:
+  enabled: true
+  log_path: "./logs/governance"
+  accuracy_tracking:
+    enabled: true
+    retention_days: 365
+    alert_threshold_mape: 20.0
+  drift_monitoring:
+    enabled: true
+    check_interval_hours: 24
+    feature_drift_threshold: 0.05
+    prediction_drift_threshold: 0.1
+  factsheet:
+    auto_generate: true
+    include_training_data_summary: true
+    include_feature_importance: true
