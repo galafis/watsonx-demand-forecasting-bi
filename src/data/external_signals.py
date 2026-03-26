@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
-from typing import Any, Optional
+from datetime import date
+from typing import Any
 
 import pandas as pd
 import structlog
@@ -14,6 +14,7 @@ logger = structlog.get_logger(__name__)
 # ---------------------------------------------------------------------------
 # Weather API integration (stub-based for offline development)
 # ---------------------------------------------------------------------------
+
 
 class WeatherSignalProvider:
     """Provide weather data as external features for demand forecasting.
@@ -78,13 +79,15 @@ class WeatherSignalProvider:
         humidity = 60 + 15 * np.sin(2 * np.pi * (day_of_year - 60) / 365) + rng.normal(0, 5, n)
         humidity = np.clip(humidity, 30, 100)
 
-        df = pd.DataFrame({
-            "date": pd.to_datetime(dates),
-            "temperature_avg": np.round(temperature, 1),
-            "precipitation_mm": np.round(precipitation, 1),
-            "humidity_pct": np.round(humidity, 1),
-            "is_rainy_day": (precipitation > 2.0).astype(int),
-        })
+        df = pd.DataFrame(
+            {
+                "date": pd.to_datetime(dates),
+                "temperature_avg": np.round(temperature, 1),
+                "precipitation_mm": np.round(precipitation, 1),
+                "humidity_pct": np.round(humidity, 1),
+                "is_rainy_day": (precipitation > 2.0).astype(int),
+            }
+        )
 
         logger.info("synthetic_weather_generated", city=city, rows=len(df))
         return df
@@ -93,6 +96,7 @@ class WeatherSignalProvider:
 # ---------------------------------------------------------------------------
 # Promotional calendar
 # ---------------------------------------------------------------------------
+
 
 class PromotionalCalendar:
     """Manage promotional events that impact demand.
@@ -120,13 +124,15 @@ class PromotionalCalendar:
             impact_multiplier: Expected demand multiplier (1.5 = +50%).
             category: Product category affected ('all' for store-wide).
         """
-        self._events.append({
-            "name": name,
-            "start_date": start_date,
-            "end_date": end_date,
-            "impact_multiplier": impact_multiplier,
-            "category": category,
-        })
+        self._events.append(
+            {
+                "name": name,
+                "start_date": start_date,
+                "end_date": end_date,
+                "impact_multiplier": impact_multiplier,
+                "category": category,
+            }
+        )
 
     def get_promotional_features(
         self,
@@ -150,9 +156,8 @@ class PromotionalCalendar:
         df["promotion_multiplier"] = 1.0
 
         for event in self._events:
-            mask = (
-                (df[date_col].dt.date >= event["start_date"])
-                & (df[date_col].dt.date <= event["end_date"])
+            mask = (df[date_col].dt.date >= event["start_date"]) & (
+                df[date_col].dt.date <= event["end_date"]
             )
             df.loc[mask, "is_promotion"] = 1
             df.loc[mask, "promotion_name"] = event["name"]
@@ -166,6 +171,7 @@ class PromotionalCalendar:
 # Economic indicators (Selic, IPCA)
 # ---------------------------------------------------------------------------
 
+
 class EconomicIndicators:
     """Provide Brazilian economic indicators as external features.
 
@@ -175,25 +181,57 @@ class EconomicIndicators:
 
     # Monthly reference data (can be updated or fetched from BCB API)
     _SELIC_MONTHLY: dict[str, float] = {
-        "2024-01": 11.75, "2024-02": 11.25, "2024-03": 10.75,
-        "2024-04": 10.50, "2024-05": 10.50, "2024-06": 10.50,
-        "2024-07": 10.50, "2024-08": 10.50, "2024-09": 10.75,
-        "2024-10": 11.25, "2024-11": 11.25, "2024-12": 12.25,
-        "2025-01": 13.25, "2025-02": 13.25, "2025-03": 14.25,
-        "2025-04": 14.25, "2025-05": 14.75, "2025-06": 14.75,
-        "2025-07": 14.75, "2025-08": 14.75, "2025-09": 14.75,
-        "2025-10": 14.75, "2025-11": 14.75, "2025-12": 14.75,
+        "2024-01": 11.75,
+        "2024-02": 11.25,
+        "2024-03": 10.75,
+        "2024-04": 10.50,
+        "2024-05": 10.50,
+        "2024-06": 10.50,
+        "2024-07": 10.50,
+        "2024-08": 10.50,
+        "2024-09": 10.75,
+        "2024-10": 11.25,
+        "2024-11": 11.25,
+        "2024-12": 12.25,
+        "2025-01": 13.25,
+        "2025-02": 13.25,
+        "2025-03": 14.25,
+        "2025-04": 14.25,
+        "2025-05": 14.75,
+        "2025-06": 14.75,
+        "2025-07": 14.75,
+        "2025-08": 14.75,
+        "2025-09": 14.75,
+        "2025-10": 14.75,
+        "2025-11": 14.75,
+        "2025-12": 14.75,
     }
 
     _IPCA_MONTHLY: dict[str, float] = {
-        "2024-01": 0.42, "2024-02": 0.83, "2024-03": 0.16,
-        "2024-04": 0.38, "2024-05": 0.46, "2024-06": 0.21,
-        "2024-07": 0.38, "2024-08": -0.02, "2024-09": 0.44,
-        "2024-10": 0.56, "2024-11": 0.39, "2024-12": 0.52,
-        "2025-01": 0.16, "2025-02": 1.31, "2025-03": 0.56,
-        "2025-04": 0.43, "2025-05": 0.36, "2025-06": 0.40,
-        "2025-07": 0.35, "2025-08": 0.30, "2025-09": 0.35,
-        "2025-10": 0.40, "2025-11": 0.35, "2025-12": 0.45,
+        "2024-01": 0.42,
+        "2024-02": 0.83,
+        "2024-03": 0.16,
+        "2024-04": 0.38,
+        "2024-05": 0.46,
+        "2024-06": 0.21,
+        "2024-07": 0.38,
+        "2024-08": -0.02,
+        "2024-09": 0.44,
+        "2024-10": 0.56,
+        "2024-11": 0.39,
+        "2024-12": 0.52,
+        "2025-01": 0.16,
+        "2025-02": 1.31,
+        "2025-03": 0.56,
+        "2025-04": 0.43,
+        "2025-05": 0.36,
+        "2025-06": 0.40,
+        "2025-07": 0.35,
+        "2025-08": 0.30,
+        "2025-09": 0.35,
+        "2025-10": 0.40,
+        "2025-11": 0.35,
+        "2025-12": 0.45,
     }
 
     def get_economic_features(self, df: pd.DataFrame, date_col: str = "date") -> pd.DataFrame:
@@ -218,7 +256,7 @@ class EconomicIndicators:
         df["ipca_monthly"] = df["_month_key"].map(self._IPCA_MONTHLY).fillna(0.40)
 
         # 12-month accumulated IPCA (approximate)
-        monthly_values = pd.Series(self._IPCA_MONTHLY)
+        pd.Series(self._IPCA_MONTHLY)
         accumulated: dict[str, float] = {}
         sorted_months = sorted(self._IPCA_MONTHLY.keys())
         for i, month in enumerate(sorted_months):
@@ -229,5 +267,8 @@ class EconomicIndicators:
         df["ipca_accumulated_12m"] = df["_month_key"].map(accumulated).fillna(4.50)
         df = df.drop(columns=["_month_key"])
 
-        logger.info("economic_features_added", columns=["selic_rate", "ipca_monthly", "ipca_accumulated_12m"])
+        logger.info(
+            "economic_features_added",
+            columns=["selic_rate", "ipca_monthly", "ipca_accumulated_12m"],
+        )
         return df

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
-from typing import Optional
 
 import pandas as pd
 import structlog
@@ -163,7 +162,7 @@ def get_regional_holidays(year: int, state: str = "SP") -> dict[date, str]:
 def build_holiday_features(
     df: pd.DataFrame,
     date_col: str = "date",
-    year: Optional[int] = None,
+    year: int | None = None,
     state: str = "SP",
     include_commercial: bool = True,
 ) -> pd.DataFrame:
@@ -184,10 +183,7 @@ def build_holiday_features(
     """
     df = df.copy()
 
-    if year is None:
-        years = df[date_col].dt.year.unique()
-    else:
-        years = [year]
+    years = df[date_col].dt.year.unique() if year is None else [year]
 
     # Collect all holidays across years
     all_holidays: dict[date, str] = {}

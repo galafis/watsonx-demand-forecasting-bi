@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -36,6 +35,7 @@ def granite_forecaster() -> GraniteTimeSeriesForecaster:
         project_id="test-project-id-000",
         url="https://us-south.ml.cloud.ibm.com",
     )
+
 
 class TestGraniteInit:
     """Tests for initialization."""
@@ -77,6 +77,7 @@ class TestGraniteFit:
         daily_series.iloc[0] = -9999.0
         assert granite_forecaster._history.iloc[0] != -9999.0
 
+
 class TestGranitePredict:
     """Tests for predict."""
 
@@ -92,7 +93,9 @@ class TestGranitePredict:
         result = granite_forecaster.predict(horizon=7)
         assert len(result) == 7
         assert result.name == "Granite-TS_forecast"
-        np.testing.assert_array_almost_equal(result.values, [120.5, 121.3, 122.1, 118.9, 119.7, 123.0, 124.2])
+        np.testing.assert_array_almost_equal(
+            result.values, [120.5, 121.3, 122.1, 118.9, 119.7, 123.0, 124.2]
+        )
 
     def test_fallback_no_client(self, granite_forecaster, daily_series):
         granite_forecaster.fit(daily_series)
@@ -126,6 +129,7 @@ class TestBuildForecastPrompt:
         s = pd.Series(np.arange(200, dtype=float))
         prompt = granite_forecaster._build_forecast_prompt(s, horizon=7)
         assert "last 90 days" in prompt
+
 
 class TestParseForecastResponse:
     """Tests for response parsing."""

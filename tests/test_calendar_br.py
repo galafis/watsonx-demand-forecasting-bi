@@ -15,10 +15,10 @@ from src.data.calendar_br import (
     get_regional_holidays,
 )
 
-
 # ---------------------------------------------------------------------------
 # Easter computation
 # ---------------------------------------------------------------------------
+
 
 class TestEasterDate:
     """Tests for the Anonymous Gregorian Easter algorithm."""
@@ -52,6 +52,7 @@ class TestEasterDate:
 # ---------------------------------------------------------------------------
 # National holidays
 # ---------------------------------------------------------------------------
+
 
 class TestGetNationalHolidays:
     """Tests for Brazilian national holidays."""
@@ -137,6 +138,7 @@ class TestGetNationalHolidays:
 # Commercial dates
 # ---------------------------------------------------------------------------
 
+
 class TestGetCommercialDates:
     """Tests for Brazilian commercial dates."""
 
@@ -176,8 +178,8 @@ class TestGetCommercialDates:
 
     def test_cyber_monday_after_black_friday(self) -> None:
         commercial = get_commercial_dates(2024)
-        bf = [d for d, n in commercial.items() if n == "Black Friday BR"][0]
-        cm = [d for d, n in commercial.items() if n == "Cyber Monday BR"][0]
+        bf = next(d for d, n in commercial.items() if n == "Black Friday BR")
+        cm = next(d for d, n in commercial.items() if n == "Cyber Monday BR")
         assert cm == bf + timedelta(days=2)
 
     def test_christmas_season_december(self) -> None:
@@ -199,13 +201,14 @@ class TestGetCommercialDates:
 # Regional holidays
 # ---------------------------------------------------------------------------
 
+
 class TestGetRegionalHolidays:
     """Tests for regional/state holidays."""
 
     def test_sp_holidays(self) -> None:
         regional = get_regional_holidays(2024, state="SP")
         assert date(2024, 1, 25) in regional  # Aniversario de SP
-        assert date(2024, 7, 9) in regional   # Revolucao Constitucionalista
+        assert date(2024, 7, 9) in regional  # Revolucao Constitucionalista
 
     def test_rj_holidays(self) -> None:
         regional = get_regional_holidays(2024, state="RJ")
@@ -224,6 +227,7 @@ class TestGetRegionalHolidays:
 # Build holiday features
 # ---------------------------------------------------------------------------
 
+
 class TestBuildHolidayFeatures:
     """Tests for building holiday feature columns on a DataFrame."""
 
@@ -235,8 +239,13 @@ class TestBuildHolidayFeatures:
 
     def test_columns_created(self, year_df: pd.DataFrame) -> None:
         result = build_holiday_features(year_df)
-        expected = ["is_holiday", "is_commercial_date", "holiday_name",
-                    "days_to_next_holiday", "days_from_last_holiday"]
+        expected = [
+            "is_holiday",
+            "is_commercial_date",
+            "holiday_name",
+            "days_to_next_holiday",
+            "days_from_last_holiday",
+        ]
         for col in expected:
             assert col in result.columns
 

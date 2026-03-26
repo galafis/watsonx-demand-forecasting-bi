@@ -8,10 +8,10 @@ import pytest
 
 from src.models.statistical import ARIMAForecaster, BaseForecaster, ETSForecaster
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def daily_series() -> pd.Series:
@@ -41,6 +41,7 @@ def short_series() -> pd.Series:
 # BaseForecaster
 # ---------------------------------------------------------------------------
 
+
 class TestBaseForecaster:
     """Tests for BaseForecaster abstract interface."""
 
@@ -60,6 +61,7 @@ class TestBaseForecaster:
 # ---------------------------------------------------------------------------
 # ARIMAForecaster
 # ---------------------------------------------------------------------------
+
 
 class TestARIMAForecaster:
     """Tests for ARIMA / SARIMAX forecaster."""
@@ -147,6 +149,7 @@ class TestARIMAForecaster:
 # ---------------------------------------------------------------------------
 # ETSForecaster
 # ---------------------------------------------------------------------------
+
 
 class TestETSForecaster:
     """Tests for ETS / Holt-Winters forecaster."""

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 import numpy as np
 import pandas as pd
 import structlog
@@ -16,7 +14,7 @@ logger = structlog.get_logger(__name__)
 def add_lag_features(
     df: pd.DataFrame,
     target_col: str = "quantity",
-    lags: Optional[list[int]] = None,
+    lags: list[int] | None = None,
     group_col: str = "sku",
 ) -> pd.DataFrame:
     """Add lagged features to the DataFrame.
@@ -45,8 +43,8 @@ def add_lag_features(
 def add_rolling_features(
     df: pd.DataFrame,
     target_col: str = "quantity",
-    windows: Optional[list[int]] = None,
-    statistics: Optional[list[str]] = None,
+    windows: list[int] | None = None,
+    statistics: list[str] | None = None,
     group_col: str = "sku",
 ) -> pd.DataFrame:
     """Add rolling window statistics to the DataFrame.

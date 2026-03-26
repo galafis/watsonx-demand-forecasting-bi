@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
@@ -12,10 +11,10 @@ import pytest
 from src.models.ensemble import EnsembleForecaster
 from src.models.statistical import BaseForecaster
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 class StubForecaster(BaseForecaster):
     """Stub forecaster that returns predetermined values for testing."""
@@ -55,6 +54,7 @@ class FailingForecaster(BaseForecaster):
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def model_a() -> StubForecaster:
     return StubForecaster("ModelA", [100.0, 110.0, 120.0, 130.0, 140.0])
@@ -73,6 +73,7 @@ def model_c() -> StubForecaster:
 # ---------------------------------------------------------------------------
 # Initialization
 # ---------------------------------------------------------------------------
+
 
 class TestEnsembleInit:
     """Tests for EnsembleForecaster initialization."""
@@ -98,28 +99,37 @@ class TestEnsembleInit:
 # Weight computation
 # ---------------------------------------------------------------------------
 
+
 class TestWeightComputation:
     """Tests for backtest-based weight computation."""
 
-    def test_equal_weights_no_scores(self, model_a: StubForecaster, model_b: StubForecaster) -> None:
+    def test_equal_weights_no_scores(
+        self, model_a: StubForecaster, model_b: StubForecaster
+    ) -> None:
         ensemble = EnsembleForecaster(models=[model_a, model_b])
         ensemble._compute_weights()
         assert abs(ensemble.weights["ModelA"] - 0.5) < 1e-6
         assert abs(ensemble.weights["ModelB"] - 0.5) < 1e-6
 
-    def test_inverse_error_weighting(self, model_a: StubForecaster, model_b: StubForecaster) -> None:
+    def test_inverse_error_weighting(
+        self, model_a: StubForecaster, model_b: StubForecaster
+    ) -> None:
         ensemble = EnsembleForecaster(models=[model_a, model_b])
         # ModelA has lower error -> should get higher weight
         ensemble.set_backtest_scores({"ModelA": 10.0, "ModelB": 30.0})
         assert ensemble.weights["ModelA"] > ensemble.weights["ModelB"]
 
-    def test_weights_sum_to_one(self, model_a: StubForecaster, model_b: StubForecaster, model_c: StubForecaster) -> None:
+    def test_weights_sum_to_one(
+        self, model_a: StubForecaster, model_b: StubForecaster, model_c: StubForecaster
+    ) -> None:
         ensemble = EnsembleForecaster(models=[model_a, model_b, model_c])
         ensemble.set_backtest_scores({"ModelA": 15.0, "ModelB": 25.0, "ModelC": 10.0})
         total = sum(ensemble.weights.values())
         assert abs(total - 1.0) < 1e-6
 
-    def test_zero_score_gets_default_weight(self, model_a: StubForecaster, model_b: StubForecaster) -> None:
+    def test_zero_score_gets_default_weight(
+        self, model_a: StubForecaster, model_b: StubForecaster
+    ) -> None:
         ensemble = EnsembleForecaster(models=[model_a, model_b])
         ensemble.set_backtest_scores({"ModelA": 10.0, "ModelB": 0.0})
         # ModelB with zero score should get default weight of 1.0
@@ -129,6 +139,7 @@ class TestWeightComputation:
 # ---------------------------------------------------------------------------
 # Predictions
 # ---------------------------------------------------------------------------
+
 
 class TestEnsemblePrediction:
     """Tests for ensemble prediction methods."""
@@ -162,7 +173,9 @@ class TestEnsemblePrediction:
         assert isinstance(result, pd.Series)
         assert result.name == "ensemble_forecast"
 
-    def test_predict_correct_horizon(self, model_a: StubForecaster, model_b: StubForecaster) -> None:
+    def test_predict_correct_horizon(
+        self, model_a: StubForecaster, model_b: StubForecaster
+    ) -> None:
         ensemble = EnsembleForecaster(models=[model_a, model_b])
         result = ensemble.predict(horizon=5)
         assert len(result) == 5
@@ -198,10 +211,13 @@ class TestEnsemblePrediction:
 # Individual forecasts and summary
 # ---------------------------------------------------------------------------
 
+
 class TestEnsembleUtilities:
     """Tests for get_individual_forecasts and summary."""
 
-    def test_individual_forecasts_dataframe(self, model_a: StubForecaster, model_b: StubForecaster) -> None:
+    def test_individual_forecasts_dataframe(
+        self, model_a: StubForecaster, model_b: StubForecaster
+    ) -> None:
         ensemble = EnsembleForecaster(models=[model_a, model_b])
         df = ensemble.get_individual_forecasts(horizon=3)
         assert isinstance(df, pd.DataFrame)

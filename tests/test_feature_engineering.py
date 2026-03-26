@@ -14,21 +14,23 @@ from src.data.feature_engineering import (
     build_features,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def sample_df() -> pd.DataFrame:
     """Create a sample DataFrame for testing feature engineering."""
     dates = pd.date_range("2024-01-01", periods=60, freq="D")
     rng = np.random.default_rng(42)
-    return pd.DataFrame({
-        "date": dates,
-        "sku": "SKU001",
-        "quantity": rng.poisson(lam=100, size=60).astype(float),
-    })
+    return pd.DataFrame(
+        {
+            "date": dates,
+            "sku": "SKU001",
+            "quantity": rng.poisson(lam=100, size=60).astype(float),
+        }
+    )
 
 
 @pytest.fixture
@@ -38,11 +40,13 @@ def multi_sku_df() -> pd.DataFrame:
     rng = np.random.default_rng(42)
     frames = []
     for sku in ["SKU001", "SKU002", "SKU003"]:
-        df = pd.DataFrame({
-            "date": dates,
-            "sku": sku,
-            "quantity": rng.poisson(lam=80, size=30).astype(float),
-        })
+        df = pd.DataFrame(
+            {
+                "date": dates,
+                "sku": sku,
+                "quantity": rng.poisson(lam=80, size=30).astype(float),
+            }
+        )
         frames.append(df)
     return pd.concat(frames, ignore_index=True)
 
@@ -50,6 +54,7 @@ def multi_sku_df() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Lag Features
 # ---------------------------------------------------------------------------
+
 
 class TestAddLagFeatures:
     """Tests for add_lag_features function."""
@@ -99,6 +104,7 @@ class TestAddLagFeatures:
 # Rolling Features
 # ---------------------------------------------------------------------------
 
+
 class TestAddRollingFeatures:
     """Tests for add_rolling_features function."""
 
@@ -115,9 +121,7 @@ class TestAddRollingFeatures:
             assert f"quantity_roll_{stat}_7" in result.columns
 
     def test_multiple_windows(self, sample_df: pd.DataFrame) -> None:
-        result = add_rolling_features(
-            sample_df, windows=[7, 14, 30], statistics=["mean"]
-        )
+        result = add_rolling_features(sample_df, windows=[7, 14, 30], statistics=["mean"])
         for w in [7, 14, 30]:
             assert f"quantity_roll_mean_{w}" in result.columns
 
@@ -139,9 +143,7 @@ class TestAddRollingFeatures:
             assert sku_data["quantity_roll_mean_3"].notna().all()
 
     def test_unknown_statistic_skipped(self, sample_df: pd.DataFrame) -> None:
-        result = add_rolling_features(
-            sample_df, windows=[7], statistics=["mean", "invalid_stat"]
-        )
+        result = add_rolling_features(sample_df, windows=[7], statistics=["mean", "invalid_stat"])
         assert "quantity_roll_mean_7" in result.columns
         assert "quantity_roll_invalid_stat_7" not in result.columns
 
@@ -150,14 +152,21 @@ class TestAddRollingFeatures:
 # Calendar Features
 # ---------------------------------------------------------------------------
 
+
 class TestAddCalendarFeatures:
     """Tests for add_calendar_features function."""
 
     def test_calendar_columns_created(self, sample_df: pd.DataFrame) -> None:
         result = add_calendar_features(sample_df)
         expected_cols = [
-            "day_of_week", "day_of_month", "month", "quarter",
-            "week_of_year", "is_weekend", "is_month_start", "is_month_end",
+            "day_of_week",
+            "day_of_month",
+            "month",
+            "quarter",
+            "week_of_year",
+            "is_weekend",
+            "is_month_start",
+            "is_month_end",
         ]
         for col in expected_cols:
             assert col in result.columns
@@ -169,31 +178,39 @@ class TestAddCalendarFeatures:
 
     def test_is_weekend_correct(self) -> None:
         # 2024-01-06 is Saturday, 2024-01-07 is Sunday
-        df = pd.DataFrame({
-            "date": pd.to_datetime(["2024-01-05", "2024-01-06", "2024-01-07", "2024-01-08"]),
-        })
+        df = pd.DataFrame(
+            {
+                "date": pd.to_datetime(["2024-01-05", "2024-01-06", "2024-01-07", "2024-01-08"]),
+            }
+        )
         result = add_calendar_features(df)
         assert result["is_weekend"].tolist() == [0, 1, 1, 0]
 
     def test_month_start_end(self) -> None:
-        df = pd.DataFrame({
-            "date": pd.to_datetime(["2024-01-01", "2024-01-15", "2024-01-31"]),
-        })
+        df = pd.DataFrame(
+            {
+                "date": pd.to_datetime(["2024-01-01", "2024-01-15", "2024-01-31"]),
+            }
+        )
         result = add_calendar_features(df)
         assert result["is_month_start"].tolist() == [1, 0, 0]
         assert result["is_month_end"].tolist() == [0, 0, 1]
 
     def test_quarter_values(self) -> None:
-        df = pd.DataFrame({
-            "date": pd.to_datetime(["2024-01-15", "2024-04-15", "2024-07-15", "2024-10-15"]),
-        })
+        df = pd.DataFrame(
+            {
+                "date": pd.to_datetime(["2024-01-15", "2024-04-15", "2024-07-15", "2024-10-15"]),
+            }
+        )
         result = add_calendar_features(df)
         assert result["quarter"].tolist() == [1, 2, 3, 4]
 
     def test_month_values(self) -> None:
-        df = pd.DataFrame({
-            "date": pd.to_datetime(["2024-03-15", "2024-06-15", "2024-12-15"]),
-        })
+        df = pd.DataFrame(
+            {
+                "date": pd.to_datetime(["2024-03-15", "2024-06-15", "2024-12-15"]),
+            }
+        )
         result = add_calendar_features(df)
         assert result["month"].tolist() == [3, 6, 12]
 
@@ -201,6 +218,7 @@ class TestAddCalendarFeatures:
 # ---------------------------------------------------------------------------
 # Cyclical Encoding
 # ---------------------------------------------------------------------------
+
 
 class TestAddCyclicalEncoding:
     """Tests for add_cyclical_encoding function."""
@@ -224,7 +242,7 @@ class TestAddCyclicalEncoding:
         result = add_cyclical_encoding(df, "month", period=12)
         # Month 1 and month 12+1 should be close (cyclical)
         sin_1 = result["month_sin"].iloc[0]
-        cos_1 = result["month_cos"].iloc[0]
+        result["month_cos"].iloc[0]
         # sin(2pi*1/12) should be positive
         assert sin_1 > 0
 
@@ -232,6 +250,7 @@ class TestAddCyclicalEncoding:
 # ---------------------------------------------------------------------------
 # Build Features (integration)
 # ---------------------------------------------------------------------------
+
 
 class TestBuildFeatures:
     """Tests for the build_features integration function."""
